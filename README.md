@@ -1,96 +1,94 @@
 # WDGWMarauderV8
 
-Firmware wardrivingowy dla **Marauder V8 (ESP32-C5)** — z opcjonalnym klastrem
-pięciu nodów **Seeed Studio XIAO ESP32-C5**, które zbierają równolegle i raportują
-do Maraudera po ESP-NOW.
+Wardriving firmware for the **Marauder V8 (ESP32-C5)** — with an optional cluster of
+five **Seeed Studio XIAO ESP32-C5** nodes that scan in parallel and report back over
+ESP-NOW.
 
-Zbiera sieci Wi-Fi 2.4 + 5 GHz oraz urządzenia BLE z pozycją GPS, zapisuje na kartę
-microSD w formacie **WigleWifi-1.6** i wysyła na **[wdgwars.pl](https://wdgwars.pl)**.
+It logs Wi-Fi 2.4 + 5 GHz networks and BLE devices with a GPS position, writes them to
+microSD in **WigleWifi-1.6** format, and uploads to **[wdgwars.pl](https://wdgwars.pl)**.
 
-> **English TL;DR** — Wardriving firmware for the Marauder V8 (ESP32-C5), with an
-> optional 5-node cluster of Seeed XIAO ESP32-C5 units reporting over ESP-NOW.
-> Logs Wi-Fi 2.4/5 GHz + BLE with GPS to microSD in WigleWifi-1.6 and uploads to
-> wdgwars.pl. **Binary releases only** — see *Licencja* at the bottom.
-> Installation: flash `*-merged.bin` at offset `0x0` with
-> [esptool.spacehuhn.com](https://esptool.spacehuhn.com/), or use `esptool` as shown below.
+**🇵🇱 Wersja polska: [README.pl.md](README.pl.md)**
 
-To **nie jest** stock ESP32Marauder. To osobny firmware pisany pod tę płytkę.
+This is **not** stock ESP32Marauder. It is separate firmware written for this board.
 
 ---
 
-## Co potrafi
+## What it does
 
-**Zbieranie**
-- Wi-Fi w trybie promiscuous na 2.4 i 5 GHz, z adaptacyjnym czasem nasłuchu na kanał
-- BLE (aktywny skan), wykrywanie **kamer Flock** po Wi-Fi i po BLE
-- Wykrywanie trackerów **Find My / AirTag** i wymuszanie dzwonka (antystalking)
-- Zbieranie **bez zasięgu GPS** (metro, garaż, galeria) — trafienia czekają
-  zaparkowane i dostają pozycję przez interpolację, gdy fix wróci
+**Capture**
+- Wi-Fi in promiscuous mode on 2.4 and 5 GHz, with adaptive dwell time per channel
+- BLE (active scan), detection of **Flock cameras** over both Wi-Fi and BLE
+- **Find My / AirTag** tracker detection and non-owner ring (anti-stalking)
+- Capture **without GPS reception** (metro, garage, shopping centre) — hits are parked
+  and given a position by interpolation once the fix returns
 
-**Zapis i wysyłka**
-- microSD, format WigleWifi-1.6 z kolumną częstotliwości
-- Bufor z podwójnym przełączaniem; zapis na kartę **poza blokadą**, więc zbieranie
-  nie gubi ramek podczas zapisu
-- Upload na wdgwars.pl po TLS z przypiętym certyfikatem; wysłane pliki oznaczone
-- Przeglądanie logów na urządzeniu, wysyłka lub kasowanie pojedynczego pliku
+**Storage and upload**
+- microSD, WigleWifi-1.6 with the frequency column
+- Double-buffered writer; the card transaction happens **outside the lock**, so capture
+  does not drop frames while a write is in flight
+- Upload to wdgwars.pl over TLS with a pinned certificate; uploaded files are marked
+- Browse logs on the device, upload or delete individual files
 
-**Klaster (opcjonalny)**
-- Marauder przestaje skanować i **dowodzi** flotą do 8 nodów
-- Kanały dzielone według **zmierzonego ruchu**, nie po równo — gęsty kanał dostaje
-  node na wyłączność i stoi na nim nieruchomo, słysząc każdy bikon
-- Jeden node pełni rolę **BLE + Flock** (C5 ma jedno radio — albo Wi-Fi, albo BLE)
-- Rdzeń stempluje trafienia **pozycją z chwili, gdy node je usłyszał**, a nie z chwili
-  odbioru — bez tego przy 50 km/h błąd sięgałby 300 m
-- **Aktualizacja nodów po eterze** z karty Maraudera, bez kabla
-- **Parowanie z akceptacją na ekranie** — każdy rig ma własny, losowy klucz
+**Cluster (optional)**
+- The Marauder stops scanning and **coordinates** a fleet of up to 8 nodes
+- Channels are split by **measured traffic**, not evenly — a busy channel gets a node to
+  itself and stops hopping altogether, hearing every beacon on it
+- One node takes the **BLE + Flock** role (the C5 has a single radio — Wi-Fi or BLE,
+  never both well)
+- The core stamps each hit with the position **from the moment the node heard it**, not
+  from the moment it arrived — without that, 20 s of buffering at 50 km/h puts a network
+  300 m down the road
+- **Over-the-air node updates** from the Marauder's SD card, no cable
+- **Pairing with on-screen approval** — every rig generates its own random key
 
 ---
 
-## Sprzęt
+## Hardware
 
-| Rola | Płytka | Uwagi |
+| Role | Board | Notes |
 |---|---|---|
-| Rdzeń / samodzielny wardriver | **Marauder V8 z ESP32-C5** | TFT + touch, microSD, GPS, MAX17048 |
-| Node klastra (opcjonalnie) | **Seeed Studio XIAO ESP32-C5** | 8 MB flash, PSRAM; bez wyświetlacza i karty |
+| Core / standalone wardriver | **Marauder V8 with ESP32-C5** | TFT + touch, microSD, GPS, MAX17048 |
+| Cluster node (optional) | **Seeed Studio XIAO ESP32-C5** | 8 MB flash, PSRAM; no display, no card |
 
-Klaster jest opcjonalny — Marauder działa samodzielnie i bez ani jednego noda.
+The cluster is optional — the Marauder works perfectly well on its own with no nodes
+at all.
 
-Zasilanie: pięć nodów w ciągłym odbiorze to **~600–750 mA** plus Marauder. Hub USB bez
-własnego zasilacza powoduje resety, a node resetujący się od podnapięcia wygląda na
-ekranie **identycznie** jak node, który zgubił rdzeń.
+Power: five nodes in continuous receive draw **~600–750 mA**, plus the Marauder. A USB
+hub without its own supply causes resets, and a node browning out looks **exactly** like
+a node that lost the core.
 
 ---
 
-## Instalacja — flasher w przeglądarce (najprościej)
+## Install — browser flasher (easiest)
 
-Nie wymaga niczego poza przeglądarką opartą o Chrome.
+Needs nothing but a Chrome-based browser.
 
-1. Wejdź na **[esptool.spacehuhn.com](https://esptool.spacehuhn.com/)**
-2. Podłącz płytkę kablem USB i kliknij **Connect**, wybierz port
-3. Dodaj **jeden** plik z offsetem **`0x0`**:
+1. Open **[esptool.spacehuhn.com](https://esptool.spacehuhn.com/)**
+2. Connect the board over USB, click **Connect**, pick the port
+3. Add **one** file at offset **`0x0`**:
 
-| Urządzenie | Plik |
+| Device | File |
 |---|---|
 | Marauder V8 | `firmware/marauder-v8-c5/WDGWMarauderV8-marauder-merged.bin` |
 | XIAO ESP32-C5 (node) | `firmware/node-xiao-c5/WDGWMarauderV8-node-merged.bin` |
 
-4. Kliknij **Program** i poczekaj do końca
-5. Odłącz i podłącz zasilanie ponownie
+4. Click **Program** and let it finish
+5. Power-cycle the board
 
-Obrazy scalone zawierają bootloader, tablicę partycji i aplikację — dlatego offset to
-`0x0` i nie ma nic więcej do podawania.
+The merged images contain bootloader, partition table and application, which is why the
+offset is `0x0` and there is nothing else to enter.
 
-> **Uwaga przy ponownym wgrywaniu noda kablem.** Node, który choć raz wziął aktualizację
-> po eterze, startuje z **drugiej partycji**. Obraz scalony zapisuje pierwszą, więc bez
-> wyczyszczenia flasha układ dalej uruchomi **stary** firmware, mimo że flashowanie
-> zgłosi sukces. W flasherze webowym zaznacz **Erase device** przed programowaniem.
+> **Careful when re-flashing a node over USB.** A node that has ever taken an
+> over-the-air update boots from the **second** partition. A merged image writes the
+> first one, so without erasing the flash the chip keeps running the **old** firmware —
+> even though flashing reports success. Tick **Erase device** before programming.
 
 ---
 
-## Instalacja — `esptool` z linii poleceń
+## Install — `esptool` from the command line
 
-Wymaga `esptool` w wersji **5.x**. Wersja 4.8.1 z Homebrew **zawiesza się na ESP32-C5** —
-użyj tej z pakietu Arduino ESP32 albo `pip install --upgrade esptool`.
+Requires `esptool` **5.x**. Version 4.8.1 from Homebrew **hangs on the ESP32-C5** — use
+the one bundled with the Arduino ESP32 core, or `pip install --upgrade esptool`.
 
 **Marauder V8:**
 
@@ -101,7 +99,7 @@ esptool --chip esp32c5 --port /dev/ttyUSB0 --baud 921600 write-flash -z \
   0x10000 firmware/marauder-v8-c5/app.bin
 ```
 
-**Node XIAO ESP32-C5:**
+**XIAO ESP32-C5 node:**
 
 ```bash
 esptool --chip esp32c5 --port /dev/ttyACM0 --baud 921600 erase-flash
@@ -111,49 +109,50 @@ esptool --chip esp32c5 --port /dev/ttyACM0 --baud 921600 write-flash -z \
   0x10000 firmware/node-xiao-c5/app.bin
 ```
 
-`erase-flash` przy nodzie jest istotne — patrz uwaga o partycjach wyżej.
+The `erase-flash` on the node matters — see the partition note above.
 
-Porty: na Linuksie zwykle `/dev/ttyUSB0` (Marauder, mostek USB-UART) i `/dev/ttyACM0`
-(XIAO, natywne USB). Na macOS `/dev/cu.usbserial-*` i `/dev/cu.usbmodem*`.
-XIAO **zawsze** enumeruje się pod tą samą nazwą, więc przy kilku sztukach po nazwie
-portu ich nie odróżnisz — sprawdź `esptool ... read-mac`.
+Ports: on Linux usually `/dev/ttyUSB0` (Marauder, USB-UART bridge) and `/dev/ttyACM0`
+(XIAO, native USB). On macOS `/dev/cu.usbserial-*` and `/dev/cu.usbmodem*`.
+Every XIAO enumerates under the **same** port name, so with several of them the port
+tells you nothing — read the MAC with `esptool ... read-mac` to know which one you hold.
 
-**Weryfikacja noda po wgraniu** — po resecie na konsoli (115200) pojawia się:
+**Verify a node after flashing** — on reset the console (115200) prints:
 
 ```
 [node] WDGNODEFW:0004 | firmware v4
 ```
 
-Jeśli tej linii nie ma, node uruchomił stary obraz z drugiej partycji.
+If that line is missing, the node booted the old image from the other partition.
 
 ---
 
-## Konfiguracja
+## Configuration
 
-Skopiuj **`wdgwars.cfg.sample`** do **katalogu głównego karty microSD** i zmień nazwę na
-**`wdgwars.cfg`**. Plik zostaje na twojej karcie — firmware nigdy go nie wysyła ani nie
-wypisuje na konsolę (hasła pokazuje tylko jako długość).
+Copy **`wdgwars.cfg.sample`** to the **root of the microSD card** and rename it to
+**`wdgwars.cfg`**. The file stays on your card — the firmware never uploads it and never
+prints it (passwords are only ever reported as a length).
 
-Minimum, żeby ruszyć:
+Minimum to get going:
 
 ```ini
-ssid=NazwaTwojegoWiFi
-pass=HasloDoWiFi
-key=twoj_klucz_api_64_znaki_hex
+ssid=YourWiFiName
+pass=YourWiFiPassword
+key=your_64_hex_character_api_key
 ```
 
-Klucz API wygenerujesz na wdgwars.pl w swoim profilu — to dokładnie 64 znaki
-szesnastkowe. Wiąże wysłane sieci z twoim kontem, więc użyj własnego.
+Generate the API key in your profile on wdgwars.pl — it is exactly 64 hex characters and
+ties uploaded networks to your account, so use your own.
 
-Bez pliku urządzenie **zbiera i zapisuje normalnie** — nie działa tylko wysyłka.
+Without the file the device still **captures and logs normally** — only uploading is
+unavailable.
 
 ---
 
-## Klaster — jak uruchomić
+## Running the cluster
 
-1. Wgraj firmware **noda** na każdą XIAO
-2. Na Marauderze: **MENU → CLUSTER**
-3. Nody zgłoszą się same. Pojawi się pasek:
+1. Flash the **node** firmware onto each XIAO
+2. On the Marauder: **MENU → CLUSTER**
+3. Nodes announce themselves. A bar appears:
 
 ```
 5 node(s) want to join:
@@ -161,61 +160,61 @@ Bez pliku urządzenie **zbiera i zapisuje normalnie** — nie działa tylko wysy
 [ ACCEPT ALL ]        * = re-adopt
 ```
 
-4. Sprawdź, czy końcówki adresów zgadzają się z twoimi sztukami, i naciśnij **ACCEPT ALL**
+4. Check the address suffixes against your own units, then press **ACCEPT ALL**
 
-Marauder losuje wtedy **własny klucz** sprzętowym generatorem i rozdaje go przyjętym
-nodom. Od tej chwili flota jest twoja.
+The Marauder then generates **its own key** from the hardware RNG and hands it to the
+nodes you accepted. From that point the fleet is yours.
 
-**BACK** opuszcza ekran, ale flota pracuje dalej. **STOP** kończy sesję i zamyka plik
-logu, dzięki czemu widać go w SYNC.
+**BACK** leaves the screen with the fleet still working. **STOP** ends the session and
+closes the log file so it shows up in SYNC.
 
-Gwiazdka przy adresie znaczy „mam klucz, ale nic mi nie odpowiada" — tak node prosi
-o ponowne przyjęcie, gdy rdzeń zmienił klucz. Nie trzeba kabla.
+A star next to an address means "I hold a key but nothing answers me" — that is how a
+node asks to be re-adopted after the core was re-keyed. No cable needed.
 
-### Aktualizacja nodów po eterze
+### Updating nodes over the air
 
-1. Wrzuć nowy `node_fw.bin` do **katalogu głównego** karty Maraudera
-2. **MENU → NODE FW → CHECK** — pokaże wersję obrazu i wersję każdego noda
+1. Put the new `node_fw.bin` in the **root** of the Marauder's SD card
+2. **MENU → NODE FW → CHECK** — shows the image version and each node's version
 3. **UPDATE ALL**
 
-Obraz idzie rozgłoszeniem, więc pięć nodów aktualizuje się w czasie jednego. Node
-sprawdza SHA-256 **całości**, zanim dotknie pamięci, i wraca do poprzedniej wersji,
-jeśli nowa nie dogada się z rdzeniem w ciągu dwóch minut.
+The image goes out by broadcast, so five nodes update in the time one would take. Each
+node verifies the SHA-256 of the **whole** image before touching flash, and reverts to
+the previous version if the new one fails to reach the core within two minutes.
 
 ---
 
-## Bezpieczeństwo — co chroni, a co nie
+## Security — what it protects, and what it does not
 
-Piszę wprost, bo publikowane binarki da się przeszukać.
+Stated plainly, because published binaries can be searched.
 
-**Klucz floty jest losowany na twoim urządzeniu** i nie ma go w tym repozytorium ani
-w żadnym obrazie. Podpisuje każdą ramkę ESP-NOW, a ruch sterujący (przydziały kanałów,
-odpowiedzi rdzenia) jest dodatkowo **szyfrowany AES-CCM**.
+**The fleet key is generated on your device.** It is not in this repository and not in
+any image here. It signs every ESP-NOW frame, and control traffic (channel assignments,
+core replies) is additionally **encrypted with AES-CCM**.
 
-**Co z tego wynika:** nikt w zasięgu nie wgra ci firmware'u na nody ani nie podstawi
-fałszywych sieci do logu — a to była najpoważniejsza konsekwencja wcześniejszego,
-wkompilowanego sekretu.
+**What that buys you:** nobody in radio range can push firmware to your nodes or inject
+fake networks into your log — which was the serious consequence of the previous,
+compiled-in secret.
 
-**Czego to nie daje:**
-- Rozgłoszenia (kawałki aktualizacji, zgłoszenia nodów) są **podpisane, ale jawne** —
-  ESP-NOW nie potrafi szyfrować rozgłoszeń
-- Sekret używany do **samego dołączania** jest publiczny i widoczny w obrazie
-  (`wdgwars-fleet-2026`). Przenosi wyłącznie „czy mogę dołączyć?" i nie daje niczego
-  poza prawem do pojawienia się na twoim ekranie z prośbą o akceptację
-- Klucz floty przelatuje w eterze **jawnie w jednej ramce**, w momencie gdy naciskasz
-  ACCEPT. Okno trwa ułamek sekundy i otwiera je twoja świadoma decyzja
-- Podpis to suma kontrolna z kluczem, **nie podpis kryptograficzny**. Chroni przed
-  podszyciem i przypadkowym pomieszaniem flot, nie przed przeciwnikiem z budżetem
+**What it does not give you:**
+- Broadcasts (update chunks, join requests) are **signed but readable** — ESP-NOW cannot
+  encrypt a broadcast
+- The secret used for **joining only** is public and visible in the image
+  (`wdgwars-fleet-2026`). It carries nothing but "may I join?" and grants nothing beyond
+  the right to appear on your screen asking to be accepted
+- The fleet key crosses the air **in the clear in a single frame**, at the moment you
+  press ACCEPT. That window lasts a fraction of a second and your deliberate action opens it
+- The tag is a keyed checksum, **not a cryptographic signature**. It stops impersonation
+  and accidental cross-talk between fleets, not a determined adversary
 
-**Twoje dane:** `wdgwars.cfg` z kluczem API i hasłami zostaje na karcie. Nie trafia do
-logów, nie jest wysyłany i nie jest wypisywany na konsolę.
+**Your data:** `wdgwars.cfg`, with your API key and Wi-Fi passwords, stays on the card.
+It is never written to a log, never uploaded, never printed to the console.
 
 ---
 
-## Format danych
+## Data format
 
-WigleWifi-1.6 — ten, którego oczekuje wdgwars.pl (**nie** 1.4, różnica to kolumna
-częstotliwości):
+WigleWifi-1.6 — the one wdgwars.pl expects (**not** 1.4; the difference is the frequency
+column):
 
 ```
 MAC,SSID,AuthMode,FirstSeen,Channel,Frequency,RSSI,Lat,Lon,AltitudeMeters,AccuracyMeters,Type
@@ -225,43 +224,43 @@ MAC,SSID,AuthMode,FirstSeen,Channel,Frequency,RSSI,Lat,Lon,AltitudeMeters,Accura
 
 ---
 
-## Gdy coś nie działa
+## When something is wrong
 
-| Objaw | Najpierw sprawdź |
+| Symptom | Check first |
 |---|---|
-| Node „ucichł" | zasilanie. Podnapięcie wygląda tak samo jak utrata rdzenia |
-| Node ma starą wersję mimo wgrania kablem | uruchomił drugą partycję — wyczyść flash i wgraj ponownie |
-| Liczniki rosną, a karta pusta | czy sesja logu jest otwarta (na ekranie plik jest nazwany) |
-| Upload odrzucony | `202` i `409` z serwera to **sukces**, nie błąd |
-| Brak zapisu po dłuższym czasie | karta — komenda `sdtest` na konsoli |
+| A node "went quiet" | power. Brown-out looks identical to losing the core |
+| Node reports an old version after a cable flash | it booted the other partition — erase flash and reflash |
+| Counters climbing, card empty | whether a log session is open (the screen names the file) |
+| Upload rejected | `202` and `409` from the server are **success**, not errors |
+| Writes stop after a while | the card — run `sdtest` on the console |
 
-Konsola szeregowa (115200) ma pełen zestaw komend: `status`, `logstats`, `dumplog`,
-`cluster`, `pair`, `nodeota`, `scanstat`, `sdtest`, `help`.
+The serial console (115200) has the full set: `status`, `logstats`, `dumplog`, `cluster`,
+`pair`, `nodeota`, `scanstat`, `sdtest`, `help`.
 
-Zasada, która oszczędziła najwięcej czasu przy tym projekcie: **potwierdzenie zapisu to
-nie potwierdzenie działania.** Sprawdzaj skutek, nie deklarację — po aktualizacji baner
-wersji, po zapisie `logstats`, po wgraniu odczyt z układu.
+The rule that saved the most time on this project: **a confirmation of a write is not a
+confirmation that something works.** Check the effect, not the claim — the version banner
+after an update, `logstats` after a write, a read-back from the chip after flashing.
 
 ---
 
-## Podziękowania
+## Credits
 
-Wzorce i inspiracje: [justcallmekoko/ESP32Marauder](https://github.com/justcallmekoko/ESP32Marauder),
+Patterns and inspiration: [justcallmekoko/ESP32Marauder](https://github.com/justcallmekoko/ESP32Marauder),
 [dark3d/ESP32DualBandWardriver](https://github.com/dark3d), C5Lab/projectZero,
 [pr3y/Bruce](https://github.com/pr3y/Bruce).
-Flasher webowy: [Spacehuhn Technologies](https://esptool.spacehuhn.com/).
+Web flasher: [Spacehuhn Technologies](https://esptool.spacehuhn.com/).
 
 ---
 
-## Licencja
+## Licence
 
-**Wydawane wyłącznie jako binarki.** Kod źródłowy nie jest publikowany.
+**Released as binaries only.** The source code is not published.
 
-Copyright © 2026 LOCOSP / [wdgwars.pl](https://wdgwars.pl). Wszelkie prawa zastrzeżone.
+Copyright © 2026 LOCOSP / [wdgwars.pl](https://wdgwars.pl). All rights reserved.
 
-Możesz pobierać i używać tych obrazów na własnym sprzęcie. Nie zezwala się na
-redystrybucję, odsprzedaż, dekompilację ani na przedstawianie tej pracy jako własnej.
+You may download and run these images on your own hardware. Redistribution, resale,
+decompilation, and presenting this work as your own are not permitted.
 
-Firmware służy do **legalnego** wardrivingu — pasywnego nasłuchu publicznie rozgłaszanych
-ramek — oraz do wykrywania trackerów w celach antystalkingowych. Odpowiedzialność za
-zgodność z prawem miejsca użycia spoczywa na użytkowniku.
+This firmware is for **lawful** wardriving — passive reception of publicly broadcast
+frames — and for anti-stalking tracker detection. Complying with the law where you use
+it is your responsibility.
