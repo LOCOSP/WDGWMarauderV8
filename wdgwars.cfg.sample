@@ -1,0 +1,97 @@
+# WDGoWars — Marauder v8 (ESP32-C5) wardriver configuration
+#
+# HOW TO USE:
+#   1. Copy this file to the ROOT of the device's microSD card.
+#   2. Rename it to exactly:  wdgwars.cfg      (the firmware reads /sdcard/wdgwars.cfg)
+#   3. Fill in your own values below and save.
+#
+# Lines starting with '#' are comments. Blank lines are ignored.
+# Format is  key=value  with NO spaces around '=' and NO quotes.
+#
+# SECURITY: this file holds your API key and Wi-Fi passwords in plain text.
+# It stays on YOUR SD card and is never uploaded or printed. Do not share the
+# card or a copy of this file with anyone.
+
+# ---------------------------------------------------------------------------
+# Wi-Fi networks used ONLY to upload logs to wdgwars.pl (not for scanning).
+# The device tries them in order and uses the first one in range. A phone
+# hotspot works great. Up to 4 networks; ssid2..4 / pass2..4 are optional.
+# ---------------------------------------------------------------------------
+ssid=YOUR_WIFI_OR_HOTSPOT_NAME
+pass=YOUR_WIFI_PASSWORD
+
+# ssid2=SecondNetwork
+# pass2=SecondPassword
+# ssid3=
+# pass3=
+# ssid4=
+# pass4=
+
+# ---------------------------------------------------------------------------
+# Your personal API key. Generate it at https://wdgwars.pl -> your profile
+# -> "API key". It is exactly 64 hex characters. It maps every network you
+# upload to YOUR account / team leaderboard, so use your own — never someone
+# else's.
+# ---------------------------------------------------------------------------
+key=0000000000000000000000000000000000000000000000000000000000000000
+
+# ---------------------------------------------------------------------------
+# Optional settings (safe to leave commented — defaults shown).
+# ---------------------------------------------------------------------------
+
+# Upload endpoint. Default is the line below; only change if told to.
+# url=https://wdgwars.pl/api/v2/upload-csv
+
+# What to capture:  both = Wi-Fi + BLE + Flock in one pass (recommended),
+#                   wifi = Wi-Fi only,  ble = BLE only.
+# scan_subsystem=both
+
+# WiFi capture engine:  promisc = fast promiscuous beacon sniffing (default),
+#                       scan    = fallback active scan hop.
+# scan_engine=promisc
+
+# Autostart scanning on GPS fix (auto), or wait for you to tap SCAN (manual).
+# scan_mode=auto
+
+# Seconds of no touch before the screen backlight blanks (0 = never). Scanning
+# continues while the screen is off.
+# screen_timeout_s=20
+
+# Timezone. The GPS supplies UTC and there is no RTC, so this is what turns it
+# into the local time written to the CSV and shown in the SYNC list.
+#   auto = Central European Time with EU summer time (UTC+1 / UTC+2)  [default]
+#   or a fixed offset in MINUTES: 0 = raw UTC, 60 = UTC+1, 330 = UTC+5:30
+# tz_offset_min=auto
+
+# Capture underground (metro, car park, mall) where there is no GPS signal.
+# Sightings are held in PSRAM and positioned by interpolating between the fix
+# before the gap and the fix after it; AccuracyMeters carries the resulting
+# uncertainty so the portal knows these are estimates. Set to 0 to discard
+# everything heard without a live fix instead.
+# gps_backfill=1
+
+# Log a network AGAIN when it becomes clearly louder (closest approach). The
+# first sighting is at the edge of the AP's range, typically 50-150 m from the
+# real transmitter; a second point near the peak lets the portal place it far
+# more accurately. Costs roughly 30-50% larger logs. Set to 0 for one row per
+# network per session.
+# rssi_relog=1
+
+# Skip TLS certificate verification when uploading. Leave this OFF: the API key
+# identifies your account, and without verification anyone sharing your hotspot
+# could impersonate wdgwars.pl and capture it. Only set to 1 if uploads start
+# failing because the server changed its certificate chain.
+# tls_insecure=0
+
+# Print every captured network to the USB serial console. OFF by default and it
+# should stay off while wardriving: each row is a ~110-byte blocking write that
+# costs ~9.5 ms at 115200 baud, so at city capture rates it steals a large slice
+# of every second from scanning and SD flushing. Debug only.
+# serial_echo=0
+
+# microSD SPI clock in kHz (default 10000 = 10 MHz — conservative for a bus
+# shared with the TFT under vibration). If your card is solid and you want the
+# fastest writes, raise it: sd_clock_khz=20000. If you still ever see a red
+# "NO SD CARD / NOT LOGGING" while driving, drop it to 8000.
+# Range 4000-40000. Run the `sdtest` serial command to check card health.
+# sd_clock_khz=10000

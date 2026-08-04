@@ -1,0 +1,40 @@
+# Kod źródłowy nie jest publikowany — wydajemy wyłącznie binarki.
+# Ta lista jest tu po to, żeby przypadkowe skopiowanie plików do repozytorium
+# nie skończyło się publikacją źródeł albo cudzych sekretów.
+
+# Źródła i katalogi budowania
+*.ino
+*.h
+*.cpp
+*.c
+build/
+build_*/
+.arduino15/
+
+# Artefakty budowania, których nie wydajemy (mapy i symbole ułatwiają analizę)
+*.elf
+*.map
+*.a
+*.o
+
+# SEKRETY — nigdy do repozytorium
+wdgwars.cfg
+*.key
+*.pem
+*.p12
+secrets*
+*_secret*
+
+# Dane zebrane w terenie: zawierają pozycje GPS i sieci z okolicy
+*.log
+*.csv
+logs/
+wdgw/
+
+# Sprzęt konkretnego egzemplarza (adresy MAC własnych urządzeń)
+NODES.md
+
+# Śmieci systemowe
+.DS_Store
+Thumbs.db
+*.swp
