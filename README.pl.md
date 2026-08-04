@@ -179,6 +179,88 @@ jeśli nowa nie dogada się z rdzeniem w ciągu dwóch minut.
 
 ---
 
+## Ekrany
+
+Ekran główny zbiera. Reszta siedzi pod **MENU** — dwa rzędy opcji, a na dole
+**INFO | SET | BACK**.
+
+### SCAN — wardriving
+
+Zbiera Wi-Fi i BLE z pozycją GPS i dopisuje wiersze WigleWifi-1.6 na kartę. Zakres
+ustawia się komendą `sub wifi|ble|both`; **both** jest domyślne i na tym układzie
+najstabilniejsze.
+
+Pod ziemią, w garażu, w galerii — wszędzie tam, gdzie nie widać nieba — trafienia są
+**parkowane, a nie wyrzucane**, i dostają pozycję przez interpolację, gdy fix wróci.
+Wiersz z 0,0 portal i tak odrzuci, a przy okazji MAC wpadłby do tablicy duplikatów
+i ta sieć nie zostałaby zapisana **już nigdy** po wyjeździe na powierzchnię.
+
+### SYNC — logi i wysyłka
+
+Lista logów z karty, najnowsze na górze, wysłane oznaczone. Tapnięcie pliku daje
+**UPLOAD** i **DELETE** — sprzątanie bez wyjmowania karty. Plik aktualnie zapisywany
+jest opisany jako nagrywany i nie da się go wysłać.
+
+### BT SCAN — urządzenia Bluetooth
+
+Aktywny skan BLE z listą na żywo: adres, nazwa jeśli rozgłaszana, siła sygnału.
+To z tej listy wybiera potem **FOX HUNT**.
+
+### FOX HUNT — znajdź konkretne urządzenie
+
+Namierzanie po sile sygnału. Wybierasz urządzenie i chodzisz — odczyt rośnie, gdy się
+zbliżasz. Przydaje się do zlokalizowania beacona, zgubionego taga albo ustalenia, które
+urządzenie w pomieszczeniu jest które.
+
+> **Najpierw skan, potem wybór.** FOX HUNT **celowo nie skanuje** — pokazuje listę, którą
+> zebrał **BT SCAN**. Kolejność: **BT SCAN → BACK → FOX HUNT**. Wejście bez wcześniejszego
+> skanu daje pustą listę i to jest podpowiedź, nie usterka.
+
+### AIRTAG SCAN — trackery
+
+Wykrywa trackery klasy Find My / AirTag w otoczeniu. Filtrowanie jest tu sednem: sam
+producent `0x004C` pasuje do **każdego** uczestnika sieci Find My, łącznie z telefonami
+i Makami, co zasypuje listę. Firmware filtruje po kategorii w bajcie statusu oraz po
+UUID usług — Apple `0xFD44`, Samsung SmartTag `0xFD5A`, DULT `0xFCB2`, Google, Tile,
+Chipolo — i odrzuca wszystko poniżej −85 dBm, bo w antystalkingu liczy się to, co jedzie
+**z tobą**.
+
+Tagi odłączone od właściciela mają znacznik **SEP**. To on decyduje, czy dzwonienie
+w ogóle zadziała.
+
+### RING TAG — zmuś tracker do dzwonienia
+
+Wybierasz tag z tego, co znalazł AIRTAG SCAN, i każesz mu zadzwonić — żeby zlokalizować
+coś podrzuconego do torby albo do auta.
+
+> Ta sama zasada: **AIRTAG SCAN → BACK → RING TAG**. Lista jest zamrożona ze skanu.
+
+**Co zadzwoni, a co nie — to konstrukcja Apple, nie ograniczenie tego firmware'u:**
+
+- **Dzwonek właściciela** (to, co robi aplikacja Find My) jest chroniony sekretem
+  z parowania. Z ESP32 niewykonalny, przez nikogo.
+- **Dzwonek nie-właściciela** (ten antystalkingowy) działa **tylko wtedy, gdy tag jest
+  odłączony od wszystkich urządzeń Apple swojego właściciela**.
+
+Gdy właściciel jest w pobliżu, zapis **udaje się na poziomie protokołu**, a tag i tak
+milczy i odpowiada `0xFFFF`. To najbardziej mylący objaw w całej tej funkcji: wszystko
+wygląda na sukces i nic nie piszczy.
+
+Żeby zadzwonić własnym, sparowanym tagiem: wyłącz Bluetooth w iPhonie i Macu, odczekaj
+15–30 minut, aż pokaże się jako **SEP**, i dopiero wtedy dzwoń. Etui AirPods dzwoni bez
+oporu i podczas testów bywa fałszywym tropem.
+
+### CLUSTER i NODE FW
+
+Flota i jej aktualizacje — opisane wyżej.
+
+### SET i INFO
+
+Ustawienia i informacje o urządzeniu: wersja firmware'u, stan GPS, bateria, karta,
+pamięć.
+
+---
+
 ## Bezpieczeństwo — co chroni, a co nie
 
 Piszę wprost, bo publikowane binarki da się przeszukać.

@@ -183,6 +183,87 @@ the previous version if the new one fails to reach the core within two minutes.
 
 ---
 
+## The screens
+
+The main screen wardrives. Everything else lives under **MENU**, which has two rows of
+options and **INFO | SET | BACK** along the bottom.
+
+### SCAN — wardriving
+
+Captures Wi-Fi and BLE with a GPS position and writes WigleWifi-1.6 rows to the card.
+Subject to `sub wifi|ble|both` on the console; **both** is the default and the stable one
+on this chip.
+
+Underground, in a garage or a shopping centre — anywhere without sky — hits are **parked
+rather than discarded**, and given a position by interpolation once the fix returns. A row
+at 0,0 would be thrown away by the portal *and* would burn that MAC in the dedup table, so
+the network would never be logged again after you drove back out.
+
+### SYNC — logs and upload
+
+Lists the logs on the card, newest first; uploaded ones are marked. Tap a file for
+**UPLOAD** and **DELETE** — housekeeping without pulling the card. The file currently
+being written is shown as recording and cannot be uploaded.
+
+### BT SCAN — Bluetooth devices
+
+Active BLE scan with a live list: address, name if advertised, RSSI. This is also the
+list **FOX HUNT** picks from.
+
+### FOX HUNT — find a specific device
+
+Direction finding by signal strength. Pick a device and walk: the reading rises as you
+close in. Useful for locating a beacon, a lost tag, or working out which device in a room
+is which.
+
+> **Scan first, then pick.** FOX HUNT deliberately does **not** scan — it shows the list
+> **BT SCAN** gathered. Order: **BT SCAN → BACK → FOX HUNT**. Opening it without scanning
+> first gives an empty list, which is a prompt, not a fault.
+
+### AIRTAG SCAN — trackers
+
+Finds Find My / AirTag-class trackers around you. Filtering matters here: manufacturer
+`0x004C` alone matches **every** Find My participant, phones and Macs included, which
+buries the list. The firmware filters on the status-byte category and on service UUIDs —
+Apple `0xFD44`, Samsung SmartTag `0xFD5A`, DULT `0xFCB2`, Google, Tile, Chipolo — and
+drops anything below −85 dBm, since anti-stalking is about what travels **with** you.
+
+Tags separated from their owner are flagged **SEP**. That flag decides whether ringing
+will work.
+
+### RING TAG — make a tracker beep
+
+Pick a tag from what AIRTAG SCAN found and make it sound, to locate something planted in
+a bag or a car.
+
+> Same rule: **AIRTAG SCAN → BACK → RING TAG**. The list is frozen from the scan.
+
+**What will and will not ring — this is Apple's design, not a limitation of this
+firmware:**
+
+- **Owner ringing** (what the Find My app does) is gated by the pairing secret. Not
+  possible from an ESP32, by anyone.
+- **Non-owner ringing** (this, the anti-stalking path) works **only while the tag is
+  separated from every one of its owner's Apple devices**.
+
+With the owner nearby the write **succeeds at the protocol level** and the tag still stays
+silent, answering `0xFFFF`. That is the most misleading symptom in the whole feature:
+everything looks like success and nothing beeps.
+
+To ring your own paired tag: switch off Bluetooth on your iPhone and Mac, wait 15–30
+minutes until it shows **SEP**, then ring. An AirPods case rings readily and is a red
+herring when testing.
+
+### CLUSTER and NODE FW
+
+The fleet and its updates — see the sections above.
+
+### SET and INFO
+
+Settings and device information: firmware build, GPS state, battery, card, memory.
+
+---
+
 ## Security — what it protects, and what it does not
 
 Stated plainly, because published binaries can be searched.
