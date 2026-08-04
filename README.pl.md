@@ -184,6 +184,36 @@ jeśli nowa nie dogada się z rdzeniem w ciągu dwóch minut.
 Ekran główny zbiera. Reszta siedzi pod **MENU** — dwa rzędy opcji, a na dole
 **INFO | SET | BACK**.
 
+### Trzy ekrany wymagają wcześniejszego uruchomienia innego
+
+Każdy się na tym raz potyka, więc piszę to przed wszystkim innym. Trzy ekrany pokazują
+**zamrożoną listę zebraną przez inny ekran** i celowo nie zbierają jej same. Wejście na
+zimno wygląda jak awaria — a to nie awaria, tylko czekanie.
+
+```
+   BT SCAN      →  BACK  →   FOX HUNT
+   AIRTAG SCAN  →  BACK  →   RING TAG
+   CLUSTER      →  BACK  →   NODE FW
+```
+
+| Chcesz | Najpierw | Potem |
+|---|---|---|
+| Namierzyć urządzenie Bluetooth | **BT SCAN** — poczekaj, aż lista się zapełni | **BACK**, potem **FOX HUNT**, wybierz cel |
+| Zadzwonić trackerem | **AIRTAG SCAN** — daj mu znaleźć tagi | **BACK**, potem **RING TAG**, wybierz tag |
+| Zaktualizować nody | **CLUSTER** — poczekaj, aż flota się zamelduje | **BACK**, potem **NODE FW → CHECK → UPDATE ALL** |
+
+**Dlaczego tak.** Skanowanie i wybieranie nie mogą dziać się naraz: lista przestawiałaby
+się pod palcem, gdy sygnały pojawiają się i znikają, a na tym układzie skan działający
+w tle rywalizuje o jedno radio z tym, co robisz. Zamrożenie listy daje stabilny wybór.
+
+**Wychodź przez BACK, nie STOP.** Na ekranie CLUSTER czerwony **STOP** kończy sesję —
+rozwiązuje flotę i zamyka plik logu. **BACK** tylko opuszcza ekran, a wszystko pracuje
+dalej. I o to chodzi przed wejściem w NODE FW: ten ekran potrzebuje działających nodów,
+żeby zobaczyć ich wersje.
+
+Jeśli ekran wyboru pokaże pustą listę, napisze, który ekran uruchomić najpierw — zamiast
+tkwić w nieskończoność na „scanning…".
+
 ### SCAN — wardriving
 
 Zbiera Wi-Fi i BLE z pozycją GPS i dopisuje wiersze WigleWifi-1.6 na kartę. Zakres

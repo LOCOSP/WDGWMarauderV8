@@ -188,6 +188,36 @@ the previous version if the new one fails to reach the core within two minutes.
 The main screen wardrives. Everything else lives under **MENU**, which has two rows of
 options and **INFO | SET | BACK** along the bottom.
 
+### Three screens need another one run first
+
+This trips everyone up once, so it is worth stating before anything else. Three screens
+show a **frozen list gathered by a different screen** and deliberately do not gather it
+themselves. Open one cold and it looks broken — it is not, it is waiting.
+
+```
+   BT SCAN      →  BACK  →   FOX HUNT
+   AIRTAG SCAN  →  BACK  →   RING TAG
+   CLUSTER      →  BACK  →   NODE FW
+```
+
+| You want to | Do this first | Then |
+|---|---|---|
+| Track down a Bluetooth device | **BT SCAN** — let the list fill | **BACK**, then **FOX HUNT**, pick your target |
+| Ring a tracker | **AIRTAG SCAN** — let it find tags | **BACK**, then **RING TAG**, pick the tag |
+| Update the nodes | **CLUSTER** — wait for the fleet to check in | **BACK**, then **NODE FW → CHECK → UPDATE ALL** |
+
+**Why they work that way.** Scanning and picking cannot happen at once: the list would
+reorder itself under your finger as signals came and went, and on this chip a scan running
+behind a picker competes for the one radio. Freezing the list makes the choice stable.
+
+**Leave with BACK, not STOP.** On CLUSTER the red **STOP** ends the session — it releases
+the fleet and closes the log file. **BACK** just leaves the screen and everything carries
+on, which is what you want before opening NODE FW: it needs the nodes online to see their
+versions.
+
+If a picker shows an empty list, it will tell you which screen to run first rather than
+sitting on "scanning…" forever.
+
 ### SCAN — wardriving
 
 Captures Wi-Fi and BLE with a GPS position and writes WigleWifi-1.6 rows to the card.
