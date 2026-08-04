@@ -171,15 +171,68 @@ closes the log file so it shows up in SYNC.
 A star next to an address means "I hold a key but nothing answers me" — that is how a
 node asks to be re-adopted after the core was re-keyed. No cable needed.
 
-### Updating nodes over the air
+### Node firmware: first install, then updates
 
-1. Put the new `node_fw.bin` in the **root** of the Marauder's SD card
-2. **MENU → NODE FW → CHECK** — shows the image version and each node's version
+**The first time, every node needs a cable.** There is no way round it: a factory XIAO
+has no firmware that could receive an update. Flash each one as described in *Install*
+above — browser flasher or `esptool`, either is fine.
+
+**After that, never again.** Updates go over the air from the Marauder's card.
+
+#### Putting the image on the card
+
+Download **`node_fw.bin`** from
+[Releases](https://github.com/LOCOSP/WDGWMarauderV8/releases) and copy it to the
+**root of the microSD card**:
+
+```
+/node_fw.bin          ← here
+/wdgwars.cfg
+/wdgw/                ← logs live here, the image does NOT
+```
+
+The name must be exactly `node_fw.bin` and it must sit in the root, not in `wdgw/`.
+That is the only place the firmware looks.
+
+The Marauder checks the card **at every boot**. If it finds an image, the start-up screen
+shows a line like `node fw v4 on card`, and the CLUSTER screen adds a note when any node
+is behind. You do not have to go looking.
+
+> Prefer not to pull the card? There is a serial route: `nodefw <bytes>` on the console
+> (115200), then send the raw file. It takes about two and a half minutes per megabyte and
+> **blocks the panel** for the duration — the screen says so. Pulling the card is faster.
+
+#### Running the update
+
+1. **MENU → CLUSTER** — wait for the nodes to check in, then leave with **BACK**
+   (not the red STOP, which would release the fleet)
+2. **MENU → NODE FW → CHECK** — shows the image version and what each node is running
 3. **UPDATE ALL**
 
-The image goes out by broadcast, so five nodes update in the time one would take. Each
-node verifies the SHA-256 of the **whole** image before touching flash, and reverts to
-the previous version if the new one fails to reach the core within two minutes.
+What you will see, in order:
+
+| Stage | Meaning |
+|---|---|
+| `asking nodes who needs it...` | a node listens on the control channel only briefly, so the core waits for each one to speak |
+| `sending 42%` | the image is going out by broadcast — five nodes cost the same as one |
+| `filling gaps` | broadcasts are unacknowledged, so nodes now request the chunks they missed |
+| `updated` per node | written and committed |
+| `all 5 now run v4` | **verified after they rebooted** — the version they report back |
+
+**UPDATE ALL is greyed out** when there is nothing to do: no image, no nodes, a transfer
+already running, or everything already up to date. Press it anyway and it will say which.
+
+You can leave the screen mid-transfer; the update carries on.
+
+#### Why it will not brick a node
+
+Each node assembles the image in PSRAM and verifies the **SHA-256 of the whole thing**
+before flash is touched at all — a partial or corrupted transfer simply fails and the node
+keeps running what it had. After committing, the new firmware boots **on probation**:
+unless it reaches the core within two minutes it puts the boot partition back and reboots
+into the previous version.
+
+That covers the case a hash cannot: an image that is intact but broken.
 
 ---
 

@@ -167,15 +167,68 @@ logu, dzięki czemu widać go w SYNC.
 Gwiazdka przy adresie znaczy „mam klucz, ale nic mi nie odpowiada" — tak node prosi
 o ponowne przyjęcie, gdy rdzeń zmienił klucz. Nie trzeba kabla.
 
-### Aktualizacja nodów po eterze
+### Firmware nodów: pierwsze wgranie, potem aktualizacje
 
-1. Wrzuć nowy `node_fw.bin` do **katalogu głównego** karty Maraudera
+**Za pierwszym razem każdy node wymaga kabla.** Nie da się tego obejść: fabryczna XIAO
+nie ma firmware'u, który mógłby przyjąć aktualizację. Wgraj każdą tak, jak opisano
+w sekcji *Instalacja* — flasherem w przeglądarce albo `esptool`, obojętnie.
+
+**Potem już nigdy.** Aktualizacje idą po eterze z karty Maraudera.
+
+#### Jak wrzucić obraz na kartę
+
+Pobierz **`node_fw.bin`** z
+[Releases](https://github.com/LOCOSP/WDGWMarauderV8/releases) i skopiuj do
+**katalogu głównego karty microSD**:
+
+```
+/node_fw.bin          ← tutaj
+/wdgwars.cfg
+/wdgw/                ← tu leżą logi, obrazu tu NIE ma
+```
+
+Nazwa musi brzmieć dokładnie `node_fw.bin` i plik musi leżeć w katalogu głównym,
+nie w `wdgw/`. To jedyne miejsce, w które firmware zagląda.
+
+Marauder sprawdza kartę **przy każdym uruchomieniu**. Jeśli znajdzie obraz, na ekranie
+startowym pojawia się linia `node fw v4 on card`, a ekran CLUSTER dopisuje uwagę, gdy
+któryś node jest w tyle. Nie musisz tego szukać.
+
+> Nie chcesz wyjmować karty? Jest droga przez kabel: komenda `nodefw <bajty>` na konsoli
+> (115200), potem wysyłasz surowy plik. Trwa jakieś dwie i pół minuty na megabajt
+> i **blokuje panel** na ten czas — ekran o tym uprzedza. Wyjęcie karty jest szybsze.
+
+#### Przebieg aktualizacji
+
+1. **MENU → CLUSTER** — poczekaj, aż nody się zameldują, i wyjdź przez **BACK**
+   (nie czerwonym STOP, bo ten rozwiązuje flotę)
 2. **MENU → NODE FW → CHECK** — pokaże wersję obrazu i wersję każdego noda
 3. **UPDATE ALL**
 
-Obraz idzie rozgłoszeniem, więc pięć nodów aktualizuje się w czasie jednego. Node
-sprawdza SHA-256 **całości**, zanim dotknie pamięci, i wraca do poprzedniej wersji,
-jeśli nowa nie dogada się z rdzeniem w ciągu dwóch minut.
+Co zobaczysz, po kolei:
+
+| Etap | Co znaczy |
+|---|---|
+| `asking nodes who needs it...` | node słucha kanału sterującego tylko przez chwilę, więc rdzeń czeka, aż każdy się odezwie |
+| `sending 42%` | obraz idzie rozgłoszeniem — pięć nodów kosztuje tyle co jeden |
+| `filling gaps` | rozgłoszenia są bez potwierdzeń, więc nody proszą teraz o kawałki, których nie dostały |
+| `updated` przy nodzie | zapisany i zatwierdzony |
+| `all 5 now run v4` | **zweryfikowane po restarcie** — wersja, którą same zgłosiły |
+
+**UPDATE ALL jest wyszarzony**, gdy nie ma czego robić: brak obrazu, brak nodów, transfer
+w toku albo wszystkie już aktualne. Naciśnij mimo to, a napisze który z tych powodów.
+
+Możesz wyjść z ekranu w trakcie — transfer leci dalej.
+
+#### Dlaczego to nie zamuruje noda
+
+Node składa obraz w PSRAM i sprawdza **SHA-256 całości**, zanim w ogóle dotknie pamięci —
+niepełny albo uszkodzony transfer po prostu się nie udaje, a node dalej chodzi na tym, co
+miał. Po zatwierdzeniu nowy firmware startuje **na probacji**: jeśli w dwie minuty nie
+dogada się z rdzeniem, przestawia partycję rozruchową z powrotem i wraca do poprzedniej
+wersji.
+
+To pokrywa przypadek, którego suma kontrolna nie wyłapie: obraz spójny, ale zepsuty.
 
 ---
 
