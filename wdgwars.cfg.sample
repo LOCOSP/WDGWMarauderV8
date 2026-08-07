@@ -36,6 +36,17 @@ pass=YOUR_WIFI_PASSWORD
 key=0000000000000000000000000000000000000000000000000000000000000000
 
 # ---------------------------------------------------------------------------
+# Touch sensitivity. This is a property of the PANEL, not the firmware: boards
+# other than the original Marauder V8 report different pressure ranges, and the
+# default can feel unresponsive on them. Lower = more sensitive. Range 50-3000.
+#
+# To find your value: watch the serial console (115200) while tapping — it prints
+# [touch z=...] for every sample. Pick something below the z you see on a normal
+# press and above what it reads when you are not touching it at all.
+# ---------------------------------------------------------------------------
+# touch_z_min=400
+
+# ---------------------------------------------------------------------------
 # Optional settings (safe to leave commented — defaults shown).
 # ---------------------------------------------------------------------------
 
