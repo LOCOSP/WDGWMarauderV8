@@ -411,6 +411,21 @@ wersji, po zapisie `logstats`, po wgraniu odczyt z układu.
 
 ---
 
+## Wydawanie
+
+Nazwy plików, format sum kontrolnych i znaczniki wersji są **umową** z flasherem
+wdgwars.pl, który serwuje te binarki bezpośrednio. Zajrzyj do
+**[RELEASING.md](RELEASING.md)**, zanim cokolwiek z tego zmienisz.
+
+Sprawdzenie pobranego pliku jedną komendą, w katalogu z pobranymi plikami:
+
+```bash
+sha256sum -c SHA256SUMS.txt      # na macOS: shasum -a 256 -c
+```
+
+To dowodzi, że plik dotarł nieuszkodzony. **Nie** dowodzi, że wydanie jest godne zaufania —
+suma leży obok binarki, więc obie pochodzą z tego samego miejsca.
+
 ## Podziękowania
 
 Wzorce i inspiracje: [justcallmekoko/ESP32Marauder](https://github.com/justcallmekoko/ESP32Marauder),

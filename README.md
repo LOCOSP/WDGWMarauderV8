@@ -414,6 +414,21 @@ after an update, `logstats` after a write, a read-back from the chip after flash
 
 ---
 
+## Releasing
+
+Asset names, checksum format and the version tags are a contract with the wdgwars.pl
+flasher, which serves these binaries directly. See **[RELEASING.md](RELEASING.md)** before
+changing any of them.
+
+Verify a download with one command in the folder you downloaded into:
+
+```bash
+sha256sum -c SHA256SUMS.txt      # shasum -a 256 -c on macOS
+```
+
+That proves the file arrived intact. It does **not** prove the release is trustworthy —
+the checksum ships alongside the binary, so both come from the same place.
+
 ## Credits
 
 Patterns and inspiration: [justcallmekoko/ESP32Marauder](https://github.com/justcallmekoko/ESP32Marauder),
