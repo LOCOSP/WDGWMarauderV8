@@ -30,7 +30,7 @@ This is **not** stock ESP32Marauder. It is separate firmware written for this bo
 - Browse logs on the device, upload or delete individual files
 
 **Cluster (optional)**
-- The Marauder stops scanning and **coordinates** a fleet of up to 8 nodes
+- The Marauder stops scanning and **coordinates** a fleet of up to 18 nodes
 - Channels are split by **measured traffic**, not evenly — a busy channel gets a node to
   itself and stops hopping altogether, hearing every beacon on it
 - One node takes the **BLE + Flock** role (the C5 has a single radio — Wi-Fi or BLE,
@@ -352,8 +352,15 @@ Settings and device information: firmware build, GPS state, battery, card, memor
 Stated plainly, because published binaries can be searched.
 
 **The fleet key is generated on your device.** It is not in this repository and not in
-any image here. It signs every ESP-NOW frame, and control traffic (channel assignments,
-core replies) is additionally **encrypted with AES-CCM**.
+any image here. It signs every ESP-NOW frame — every assignment, every record, every
+firmware chunk.
+
+**Correction (2026-08-06):** an earlier version of this file claimed control traffic was
+also *encrypted* with AES-CCM. It is not. The key is installed as the ESP-NOW PMK, but
+per-peer encryption is deliberately left off, because ESP-NOW encrypts at most **six**
+peers while carrying twenty in total — turning it on would cap a fleet at six nodes. The
+fleet size won. Traffic is therefore **signed but readable**, and the sentence has been
+corrected rather than quietly deleted.
 
 **What that buys you:** nobody in radio range can push firmware to your nodes or inject
 fake networks into your log — which was the serious consequence of the previous,

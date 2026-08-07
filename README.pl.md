@@ -30,7 +30,7 @@ To **nie jest** stock ESP32Marauder. To osobny firmware pisany pod tę płytkę.
 - Przeglądanie logów na urządzeniu, wysyłka lub kasowanie pojedynczego pliku
 
 **Klaster (opcjonalny)**
-- Marauder przestaje skanować i **dowodzi** flotą do 8 nodów
+- Marauder przestaje skanować i **dowodzi** flotą do 18 nodów
 - Kanały dzielone według **zmierzonego ruchu**, nie po równo — gęsty kanał dostaje
   node na wyłączność i stoi na nim nieruchomo, słysząc każdy bikon
 - Jeden node pełni rolę **BLE + Flock** (C5 ma jedno radio — albo Wi-Fi, albo BLE)
@@ -349,8 +349,15 @@ pamięć.
 Piszę wprost, bo publikowane binarki da się przeszukać.
 
 **Klucz floty jest losowany na twoim urządzeniu** i nie ma go w tym repozytorium ani
-w żadnym obrazie. Podpisuje każdą ramkę ESP-NOW, a ruch sterujący (przydziały kanałów,
-odpowiedzi rdzenia) jest dodatkowo **szyfrowany AES-CCM**.
+w żadnym obrazie. Podpisuje każdą ramkę ESP-NOW — każdy przydział, każdy rekord, każdy
+kawałek firmware'u.
+
+**Sprostowanie (2026-08-06):** wcześniejsza wersja tego pliku twierdziła, że ruch
+sterujący jest dodatkowo **szyfrowany AES-CCM**. Nie jest. Klucz trafia do ESP-NOW jako
+PMK, ale szyfrowanie per-peer jest świadomie wyłączone: ESP-NOW szyfruje najwyżej
+**sześciu** peerów, mieszcząc dwudziestu — włączenie go ograniczyłoby flotę do sześciu
+nodów. Wygrała wielkość floty. Ruch jest więc **podpisany, ale jawny**, a zdanie zostało
+sprostowane, nie po cichu usunięte.
 
 **Co z tego wynika:** nikt w zasięgu nie wgra ci firmware'u na nody ani nie podstawi
 fałszywych sieci do logu — a to była najpoważniejsza konsekwencja wcześniejszego,
