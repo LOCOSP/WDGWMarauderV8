@@ -65,8 +65,16 @@ what the chip executes.
 Serial console: `version` prints the core's build, the node image on the card, and every
 node's reported version in one go.
 
-Bump both `WDG_CORE_FW_VER` / `WDG_CORE_TAG` and `WDG_NODE_FW_VER` / `WDG_FW_TAG` when
-cutting a release. The tag string is `__attribute__((used))` on purpose — `volatile`
+There are **two** core fields and they answer different questions:
+
+| Field | Purpose |
+|---|---|
+| `WDG_CORE_FW_VER` | integer the protocol compares — must equal the tag's **major** |
+| `WDG_CORE_FW_STR` | full version a human reads, e.g. `5.4.0` — shown in INFO and the banner |
+
+`v5` on screen is useless when releases run v5.0.0 to v5.4.0: it cannot tell you whether
+the fix you are chasing is on the device. Bump **both**, plus `WDG_NODE_FW_VER` /
+`WDG_FW_TAG` on the node, when cutting a release. The tag string is `__attribute__((used))` on purpose — `volatile`
 alone did not stop the compiler discarding it, and it once vanished from an image
 silently.
 
