@@ -70,6 +70,20 @@ cutting a release. The tag string is `__attribute__((used))` on purpose — `vol
 alone did not stop the compiler discarding it, and it once vanished from an image
 silently.
 
+## The merged image erases NVS
+
+`merge-bin` pads the gaps between bootloader, partition table and application with `0xFF`,
+and the NVS partition (`0x9000`) falls in one of those gaps. Writing the merged file at
+`0x0` therefore wipes NVS — which holds the **fleet key** a rig generates when it adopts
+its nodes.
+
+Right for a first install, wrong for an upgrade. Anyone updating a paired rig should flash
+`app.bin` at `0x10000` alone. This is documented in both READMEs; keep it there.
+
+Recovery costs no cable: nodes notice within ~45 s that nothing authenticates and ask to
+be re-adopted, and the cluster screen says the key is missing instead of showing an empty
+list. That safety net exists because this trap is easy to walk into.
+
 ## Webhook
 
 Releases notify the portal over a webhook configured in this repository's settings:

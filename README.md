@@ -347,6 +347,33 @@ Settings and device information: firmware build, GPS state, battery, card, memor
 
 ---
 
+## Updating an already-paired rig
+
+**Flashing the merged image erases your pairing.** The merged file spans the whole flash
+from `0x0`, including the NVS partition, and pads it with `0xFF` — so it wipes the fleet
+key your Marauder generated when you adopted your nodes. The nodes keep theirs, nothing
+authenticates, and the cluster screen goes empty. It looks exactly like a broken build.
+
+That is fine and even wanted for a **first** install. For an **upgrade**, flash the
+application alone and everything survives:
+
+```bash
+esptool --chip esp32c5 --port /dev/ttyUSB0 --baud 921600 write-flash -z \
+  0x10000 firmware/marauder-v8-c5/app.bin
+```
+
+`app.bin` sits above NVS, so the fleet key, the config and your pairings are untouched.
+
+**If you have already flashed the merged image and the nodes have vanished:** nothing is
+lost and no cable is needed. Each node notices within about a minute that nothing it hears
+is signed correctly and starts asking to be re-adopted. Open **CLUSTER**, wait for the
+list, and press **ACCEPT ALL**. The rig generates a fresh key and hands it out again.
+
+The cluster screen says so directly when it has no key, rather than leaving you with an
+empty list.
+
+---
+
 ## Security — what it protects, and what it does not
 
 Stated plainly, because published binaries can be searched.

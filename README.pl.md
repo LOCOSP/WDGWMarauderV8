@@ -344,6 +344,32 @@ pamięć.
 
 ---
 
+## Aktualizacja sparowanego zestawu
+
+**Wgranie obrazu scalonego kasuje parowanie.** Ten plik obejmuje pamięć od adresu `0x0`
+razem z partycją NVS i wypełnia ją pustymi bajtami — czyli zamazuje klucz floty, który
+Marauder wylosował przy przyjmowaniu nodów. Nody zachowują swój, nic się nie
+uwierzytelnia, a ekran klastra świeci pustką. Wygląda dokładnie jak zepsute wydanie.
+
+Przy **pierwszej** instalacji to nie przeszkadza, a nawet jest pożądane. Przy
+**aktualizacji** wgraj samą aplikację i wszystko przeżyje:
+
+```bash
+esptool --chip esp32c5 --port /dev/ttyUSB0 --baud 921600 write-flash -z \
+  0x10000 firmware/marauder-v8-c5/app.bin
+```
+
+`app.bin` leży powyżej NVS, więc klucz floty, konfiguracja i parowania zostają nietknięte.
+
+**Jeśli już wgrałeś obraz scalony i nody zniknęły:** nic nie przepadło i kabel nie jest
+potrzebny. Każdy node w ciągu mniej więcej minuty zauważy, że nic z tego, co słyszy, nie
+jest poprawnie podpisane, i zacznie prosić o ponowne przyjęcie. Wejdź w **CLUSTER**,
+poczekaj na listę i naciśnij **ACCEPT ALL**. Zestaw wylosuje nowy klucz i rozda go od nowa.
+
+Ekran klastra mówi to teraz wprost, gdy nie ma klucza, zamiast zostawiać pustą listę.
+
+---
+
 ## Bezpieczeństwo — co chroni, a co nie
 
 Piszę wprost, bo publikowane binarki da się przeszukać.
