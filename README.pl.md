@@ -437,6 +437,13 @@ wersji, po zapisie `logstats`, po wgraniu odczyt z układu.
 
 ---
 
+## Budujesz flasher pod te obrazy?
+
+Jeśli wpinasz te binarki w narzędzie do wgrywania, zacznij od
+**[FLASHER-NOTES.md](FLASHER-NOTES.md)**. W skrócie: obraz scalony kasuje NVS, w którym
+siedzi klucz wiążący Maraudera z jego nodami — więc „aktualizacja" i „pierwsza
+instalacja" nie mogą być tym samym przyciskiem.
+
 ## Wydawanie
 
 Nazwy plików, format sum kontrolnych i znaczniki wersji są **umową** z flasherem

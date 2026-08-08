@@ -441,6 +441,13 @@ after an update, `logstats` after a write, a read-back from the chip after flash
 
 ---
 
+## Building a flasher for these images?
+
+If you are integrating these binaries into a flashing tool, read
+**[FLASHER-NOTES.md](FLASHER-NOTES.md)** first. The short version: the merged image
+erases NVS, which holds the fleet key that pairs a Marauder to its cluster nodes — so
+"update" and "first install" must not be the same button.
+
 ## Releasing
 
 Asset names, checksum format and the version tags are a contract with the wdgwars.pl
