@@ -47,7 +47,7 @@ This is **not** stock ESP32Marauder. It is separate firmware written for this bo
 
 | Role | Board | Notes |
 |---|---|---|
-| Core / standalone wardriver | **Marauder V8 with ESP32-C5** | TFT + touch, microSD, GPS, MAX17048 |
+| Core / standalone wardriver | **Marauder V8 with ESP32-C5** | TFT + touch, microSD, GPS, battery gauge |
 | Cluster node (optional) | **Seeed Studio XIAO ESP32-C5** | 8 MB flash, PSRAM; no display, no card |
 
 The cluster is optional — the Marauder works perfectly well on its own with no nodes
@@ -343,7 +343,44 @@ The fleet and its updates — see the sections above.
 
 ### SET and INFO
 
-Settings and device information: firmware build, GPS state, battery, card, memory.
+**SET** — tap a row to change it. Every setting is written to `wdgwars.cfg` on the card,
+so it survives a reboot and you can also edit it there directly.
+
+| Row | Values | What it does |
+|---|---|---|
+| **SCAN MODE** | AUTO / MANUAL | AUTO starts wardriving by itself as soon as GPS gets a fix. Set MANUAL if you would rather press SCAN yourself. |
+| **SCREEN TIMEOUT** | OFF / 10 / 20 / 30 / 60 s | Blanks the backlight after inactivity. Double-tap wakes it. Logging never stops while the screen is off. |
+| **WARDRIVE** | WIFI / BLE / BOTH | Which radio the wardriver uses. BOTH is the default and the one to leave alone unless you know why you are changing it. |
+| **BAND** | BOTH / 2.4 GHz / 5 GHz | Which half of the spectrum to sweep. |
+
+**About BAND.** BOTH is the right default: roughly half of modern APs are 5 GHz-only, so
+dropping a band drops those networks entirely. The choice is still worth having — 2.4 GHz
+carries much further, so a sparse rural run finds more per dwell there, while in a block
+of flats a 2.4-only sweep spends most of its time on the same three crowded channels and
+misses the 5 GHz APs sitting right next to them. Changing it mid-scan restarts the engine
+so the new channel list takes effect immediately.
+
+**INFO** — firmware build, GPS state, battery, card, memory.
+
+**About the battery reading.** These boards ship with one of four different power chips,
+and which one you get is luck of the draw. All four are probed at boot and INFO names the
+one it found, because the same number means different things on different hardware:
+
+| Chip | I2C | What you get |
+|---|---|---|
+| MAX17048 | `0x36` | real fuel gauge — percentage and cell voltage |
+| IP5306 | `0x75` | charger with a 4-LED indicator: **25 / 50 / 75 / 100 only**, no voltage |
+| AXP2101 | `0x34` | gauge percentage plus battery voltage |
+| AXP192 | `0x34` | voltage only; percentage estimated from a discharge curve |
+
+On an IP5306, `75%` is one of four LED steps rather than a measurement, so INFO shows it
+as `~75% IP5306 step` and omits the voltage field the chip cannot provide. If your board
+shows `no gauge fitted`, run the boot output past us — the I2C scan line names whatever
+it found, and that is usually enough to add support.
+
+MAX17048 and IP5306 are confirmed against real hardware. The two AXP paths follow their
+datasheets and have not yet been run on a board — if you have one, we would like to know
+how it goes.
 
 ---
 
