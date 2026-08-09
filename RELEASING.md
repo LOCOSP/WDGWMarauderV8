@@ -65,6 +65,17 @@ what the chip executes.
 Serial console: `version` prints the core's build, the node image on the card, and every
 node's reported version in one go.
 
+**Build with `--export-binaries`, then check the tag in the file you are about to ship.**
+Without that flag `arduino-cli` compiles into a temporary directory and leaves `build/`
+holding the *previous* build — which copies cleanly, checksums cleanly, and ships the
+wrong firmware. Nothing about the process complains. One command catches it:
+
+```bash
+strings firmware/node-xiao-c5/node_fw.bin | grep -o 'WDGNODEFW:[0-9]*'
+```
+
+That has already caught a release staged from stale artifacts, one step before the push.
+
 There are **two** core fields and they answer different questions:
 
 | Field | Purpose |
