@@ -62,6 +62,29 @@ a node that lost the core.
 
 ---
 
+## Which file do I flash?
+
+Downloads are on the **[Releases](../../releases/latest)** page. Asset names are the same
+in every release — only the version tag inside each image changes. Pick by what you are
+doing:
+
+| Goal | File | Offset | Keeps fleet key? |
+|---|---|---|---|
+| Marauder V8 — first install / clean flash (no Launcher) | `WDGWMarauderV8-marauder-merged.bin` | `0x0` | no¹ |
+| Marauder V8 — **upgrade in place** | `WDGWMarauderV8-marauder-app.bin` | `0x10000` | **yes** |
+| XIAO node — clean flash | `WDGWMarauderV8-node-merged.bin` | `0x0` | no¹ |
+| XIAO node — OTA / mesh push, or app upgrade | `node_fw.bin` | `0x10000` | yes |
+
+**The fleet key is what pairs your nodes.** A merged image spans the whole flash from `0x0`
+and wipes NVS — taking the key with it; an `app.bin` sits above NVS at `0x10000` and leaves
+the key, the config and your pairings untouched. So: **first install → merged; every later
+update → app.bin.** Full detail in [Updating an already-paired rig](#updating-an-already-paired-rig).
+
+¹ Not truly lost even then: the key is mirrored to `wdgw_fleet.key` on the SD card and
+restores itself on boot.
+
+---
+
 ## Install — browser flasher (easiest)
 
 Needs nothing but a Chrome-based browser.
@@ -399,10 +422,13 @@ application alone and everything survives:
 
 ```bash
 esptool --chip esp32c5 --port /dev/ttyUSB0 --baud 921600 write-flash -z \
-  0x10000 firmware/marauder-v8-c5/app.bin
+  0x10000 WDGWMarauderV8-marauder-app.bin
 ```
 
 `app.bin` sits above NVS, so the fleet key, the config and your pairings are untouched.
+That file is **`WDGWMarauderV8-marauder-app.bin`** on the [Releases](../../releases/latest)
+page (identical to `firmware/marauder-v8-c5/app.bin` in the repo tree). The browser flasher
+works too — add it at offset `0x10000` instead of the merged image at `0x0`.
 
 **If you have already flashed the merged image and the nodes have vanished:** nothing is
 lost and no cable is needed. Each node notices within about a minute that nothing it hears

@@ -58,6 +58,28 @@ ekranie **identycznie** jak node, który zgubił rdzeń.
 
 ---
 
+## Który plik wgrać?
+
+Pliki są na stronie **[Releases](../../releases/latest)**. Nazwy assetów są **takie same
+w każdym wydaniu** — zmienia się tylko tag wersji wewnątrz obrazu. Wybierz wg tego, co robisz:
+
+| Cel | Plik | Offset | Zachowuje klucz floty? |
+|---|---|---|---|
+| Marauder V8 — pierwsza instalacja / czysty flash (bez Launchera) | `WDGWMarauderV8-marauder-merged.bin` | `0x0` | nie¹ |
+| Marauder V8 — **aktualizacja w miejscu** | `WDGWMarauderV8-marauder-app.bin` | `0x10000` | **tak** |
+| Node XIAO — czysty flash | `WDGWMarauderV8-node-merged.bin` | `0x0` | nie¹ |
+| Node XIAO — push OTA / mesh, lub aktualizacja apki | `node_fw.bin` | `0x10000` | tak |
+
+**Klucz floty to jest to, co paruje Twoje nody.** Obraz scalony (`0x0`) obejmuje NVS i
+kasuje klucz; `app.bin` leży powyżej NVS (`0x10000`) i zostawia klucz, konfigurację oraz
+parowania nietknięte. Czyli: **pierwsza instalacja → merged; każda kolejna aktualizacja →
+app.bin.** Szczegóły w [Aktualizacja sparowanego zestawu](#aktualizacja-sparowanego-zestawu).
+
+¹ I tak nie przepada: klucz jest kopiowany do `wdgw_fleet.key` na karcie SD i sam wraca
+przy starcie.
+
+---
+
 ## Instalacja — flasher w przeglądarce (najprościej)
 
 Nie wymaga niczego poza przeglądarką opartą o Chrome.
@@ -358,10 +380,13 @@ Przy **pierwszej** instalacji to nie przeszkadza, a nawet jest pożądane. Przy
 
 ```bash
 esptool --chip esp32c5 --port /dev/ttyUSB0 --baud 921600 write-flash -z \
-  0x10000 firmware/marauder-v8-c5/app.bin
+  0x10000 WDGWMarauderV8-marauder-app.bin
 ```
 
 `app.bin` leży powyżej NVS, więc klucz floty, konfiguracja i parowania zostają nietknięte.
+Ten plik to **`WDGWMarauderV8-marauder-app.bin`** na stronie [Releases](../../releases/latest)
+(identyczny z `firmware/marauder-v8-c5/app.bin` w drzewie repo). Flasher w przeglądarce też
+zadziała — dodaj go na offsecie `0x10000` zamiast obrazu scalonego na `0x0`.
 
 **Jeśli już wgrałeś obraz scalony i nody zniknęły:** nic nie przepadło i kabel nie jest
 potrzebny. Każdy node w ciągu mniej więcej minuty zauważy, że nic z tego, co słyszy, nie
