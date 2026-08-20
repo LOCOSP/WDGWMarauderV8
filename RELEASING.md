@@ -12,12 +12,23 @@ Every release must attach exactly these, spelled exactly this way:
 | File | What it is |
 |---|---|
 | `WDGWMarauderV8-marauder-merged.bin` | Marauder V8 (ESP32-C5), single image for offset `0x0` |
+| `WDGWMarauderV8-marauder-app.bin` | Marauder V8 application only, for offset `0x10000` — an **in-place upgrade** that keeps NVS and the fleet key. Also flash this to a Launcher slot. |
 | `WDGWMarauderV8-node-merged.bin` | Seeed XIAO ESP32-C5 node, single image for offset `0x0` |
-| `node_fw.bin` | the same node image, named for over-the-air updates from the SD card |
+| `node_fw.bin` | the same node image (application only, offset `0x10000`), named for over-the-air updates from the SD card |
 | `SHA256SUMS.txt` | checksums, flat names (see below) |
 
 **A rename is a silent outage.** If a new board is ever added, tell the portal side
 *before* the release, not after.
+
+**Names never change between releases — only the version tag inside each image
+does.** People flashing directly look for these exact names; renaming per version
+(e.g. `w5142.bin`) is only for the operator's own Desktop/Launcher-tile bookkeeping
+and must never reach a release.
+
+**`SHA256SUMS.txt` lists only the three portal-served images** (the two `-merged`
+and `node_fw.bin`), so the portal's `sha256sum -c` never fails on a file it did not
+download. The `-app.bin` images use unique names (no bare `app.bin` ambiguity) and
+carry their checksum in the release notes instead.
 
 ## `SHA256SUMS.txt` uses bare filenames
 
