@@ -1,5 +1,8 @@
 # WDGWMarauderV8
 
+[![WDGWars](https://wdgwars.pl/card/locosp.svg)](https://wdgwars.pl/)
+
+
 Wardriving firmware for the **Marauder V8 (ESP32-C5)** — with an optional cluster of
 five **Seeed Studio XIAO ESP32-C5** nodes that scan in parallel and report back over
 ESP-NOW.
