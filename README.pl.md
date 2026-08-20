@@ -1,5 +1,7 @@
 # WDGWMarauderV8
 
+[![WDGWars](https://wdgwars.pl/card/locosp.svg)](https://wdgwars.pl/)
+
 Firmware wardrivingowy dla **Marauder V8 (ESP32-C5)** — z opcjonalnym klastrem
 pięciu nodów **Seeed Studio XIAO ESP32-C5**, które zbierają równolegle i raportują
 do Maraudera po ESP-NOW.
